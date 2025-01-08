@@ -1,5 +1,5 @@
-import React, { useEffect, useMemo } from 'react';
-import { View, StyleSheet, TouchableOpacity, Text, Platform, Dimensions } from 'react-native';
+import React, { useEffect } from 'react';
+import { View, StyleSheet, TouchableOpacity, Text, Platform } from 'react-native';
 import { GRID_SIZE, CELL_SIZE, BASE_SPEED, SPEED_INCREMENT } from '@/constants/game';
 import type { GameState, Direction, Position } from '@/types/game';
 import { soundService } from '@/services/sound';
@@ -10,62 +10,16 @@ type Props = {
 };
 
 export function GameBoard({ gameState, setGameState }: Props) {
-  // Ekran genişliğine göre oyun alanını ölçeklendirme
-  const screenWidth = Dimensions.get('window').width;
-  const scale = useMemo(() => {
-    const maxGameWidth = GRID_SIZE * CELL_SIZE;
-    const padding = 32; // Kenarlardan boşluk
-    return Math.min(1, (screenWidth - padding) / maxGameWidth);
-  }, [screenWidth]);
-
-  // Ölçeklendirilmiş hücre boyutu
-  const scaledCellSize = CELL_SIZE * scale;
-
-  // Oyun alanı boyutları
-  const gameWidth = GRID_SIZE * scaledCellSize;
-  const gameHeight = GRID_SIZE * scaledCellSize;
-
-  // Pozisyon hesaplama fonksiyonu
-  const getPosition = (pos: Position) => ({
-    left: pos.x * scaledCellSize,
-    top: pos.y * scaledCellSize,
-    width: scaledCellSize,
-    height: scaledCellSize,
-  });
-
   useEffect(() => {
-    const initSounds = async () => {
-      console.log('Initializing sounds...');
-      try {
-        await soundService.loadSounds();
-        console.log('Sounds initialized successfully');
-      } catch (error) {
-        console.error('Error initializing sounds:', error);
-      }
-    };
-
-    initSounds();
-
+    console.log('Loading sounds in GameBoard...');
+    soundService.loadSounds();
     return () => {
-      soundService.unloadSounds().catch(error => {
-        console.error('Error unloading sounds:', error);
-      });
+      console.log('Unloading sounds...');
+      soundService.unloadSounds();
     };
   }, []);
 
-  const playSoundEffect = async (type: 'eat' | 'gameOver' | 'move') => {
-    try {
-      if (!soundService.isLoaded) {
-        console.log('Reloading sounds...');
-        await soundService.loadSounds();
-      }
-      await soundService.playSound(type);
-    } catch (error) {
-      console.error(`Error playing ${type} sound:`, error);
-    }
-  };
-
-  const handleDirectionChange = async (newDirection: Direction) => {
+  const handleDirectionChange = (newDirection: Direction) => {
     if (gameState.isGameOver) return;
     
     if (
@@ -77,7 +31,7 @@ export function GameBoard({ gameState, setGameState }: Props) {
       return;
     }
 
-    await playSoundEffect('move');
+    soundService.playSound('move');
     setGameState(prev => ({ ...prev, direction: newDirection }));
   };
 
@@ -142,13 +96,14 @@ export function GameBoard({ gameState, setGameState }: Props) {
         }
 
         if (isCollision(head, newSnake)) {
-          playSoundEffect('gameOver');
+          soundService.playSound('gameOver');
           clearInterval(gameLoop);
           return { ...prevState, isGameOver: true };
         }
 
         if (head.x === prevState.food.x && head.y === prevState.food.y) {
-          playSoundEffect('eat');
+          console.log('Food eaten, playing sound...');
+          soundService.playSound('eat').catch(console.error);
           newSnake.unshift(head);
           return {
             ...prevState,
@@ -170,14 +125,17 @@ export function GameBoard({ gameState, setGameState }: Props) {
 
   return (
     <View style={styles.container}>
-      <View style={[styles.gameBoard, { width: gameWidth, height: gameHeight }]}>
+      <View style={styles.board}>
         {gameState.snake.map((segment, index) => (
           <View
-            key={`${segment.x}-${segment.y}`}
+            key={index}
             style={[
               styles.cell,
               styles.snake,
-              getPosition(segment),
+              {
+                left: segment.x * CELL_SIZE,
+                top: segment.y * CELL_SIZE,
+              },
             ]}
           />
         ))}
@@ -185,22 +143,23 @@ export function GameBoard({ gameState, setGameState }: Props) {
           style={[
             styles.cell,
             styles.food,
-            getPosition(gameState.food),
+            {
+              left: gameState.food.x * CELL_SIZE,
+              top: gameState.food.y * CELL_SIZE,
+            },
           ]}
         />
       </View>
-
+      
       {Platform.OS !== 'web' && (
         <View style={styles.controls}>
           <View style={styles.controlRow}>
-            <View style={styles.controlSpacer} />
             <TouchableOpacity
               style={styles.controlButton}
               onPress={() => handleDirectionChange('UP')}
             >
               <Text style={styles.controlText}>↑</Text>
             </TouchableOpacity>
-            <View style={styles.controlSpacer} />
           </View>
           <View style={styles.controlRow}>
             <TouchableOpacity
@@ -209,17 +168,20 @@ export function GameBoard({ gameState, setGameState }: Props) {
             >
               <Text style={styles.controlText}>←</Text>
             </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.controlButton}
-              onPress={() => handleDirectionChange('DOWN')}
-            >
-              <Text style={styles.controlText}>↓</Text>
-            </TouchableOpacity>
+            <View style={styles.controlSpacer} />
             <TouchableOpacity
               style={styles.controlButton}
               onPress={() => handleDirectionChange('RIGHT')}
             >
               <Text style={styles.controlText}>→</Text>
+            </TouchableOpacity>
+          </View>
+          <View style={styles.controlRow}>
+            <TouchableOpacity
+              style={styles.controlButton}
+              onPress={() => handleDirectionChange('DOWN')}
+            >
+              <Text style={styles.controlText}>↓</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -255,16 +217,19 @@ function isCollision(head: Position, snake: Position[]): boolean {
 const styles = StyleSheet.create({
   container: {
     alignItems: 'center',
-    justifyContent: 'center',
-    padding: 16,
+    gap: 20,
   },
-  gameBoard: {
+  board: {
+    width: GRID_SIZE * CELL_SIZE,
+    height: GRID_SIZE * CELL_SIZE,
     backgroundColor: '#f0f0f0',
     borderWidth: 1,
     borderColor: '#ccc',
     position: 'relative',
   },
   cell: {
+    width: CELL_SIZE,
+    height: CELL_SIZE,
     position: 'absolute',
   },
   snake: {
@@ -276,7 +241,6 @@ const styles = StyleSheet.create({
     borderRadius: CELL_SIZE / 2,
   },
   controls: {
-    marginTop: 20,
     gap: 10,
   },
   controlRow: {

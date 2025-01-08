@@ -113,8 +113,14 @@ export function GameBoard({ gameState, setGameState }: Props) {
     }
   }, [gameState.isGameOver, handleDirectionChange]);
 
+  // Oyunu başlatma fonksiyonu
+  const startGame = () => {
+    setGameState(prev => ({ ...prev, isPlaying: true }));
+  };
+
+  // Oyun döngüsü useEffect'ini güncelle
   useEffect(() => {
-    if (gameState.isGameOver) return;
+    if (gameState.isGameOver || !gameState.isPlaying) return;
 
     const currentSpeed = Math.max(
       BASE_SPEED - (gameState.snake.length - 3) * SPEED_INCREMENT,
@@ -166,8 +172,33 @@ export function GameBoard({ gameState, setGameState }: Props) {
     }, currentSpeed);
 
     return () => clearInterval(gameLoop);
-  }, [gameState.isGameOver, gameState.snake.length]);
+  }, [gameState.isGameOver, gameState.isPlaying, gameState.snake.length]);
 
+  // Oyun bittiğinde veya başlamadığında boş bir view döndür
+  if (gameState.isGameOver) {
+    return null;
+  }
+
+  // Başlangıç ekranı
+  if (!gameState.isPlaying) {
+    return (
+      <View style={styles.container}>
+        <View style={styles.startScreen}>
+          <Text style={styles.welcomeText}>Hoş Geldin, {gameState.playerName}!</Text>
+          <Text style={styles.instructionText}>
+            {Platform.OS === 'web' 
+              ? 'Oyunu kontrol etmek için klavyenin ok tuşlarını veya W,A,S,D tuşlarını kullanabilirsin.'
+              : 'Oyunu kontrol etmek için ekrandaki ok tuşlarını kullanabilirsin.'}
+          </Text>
+          <TouchableOpacity style={styles.startButton} onPress={startGame}>
+            <Text style={styles.startButtonText}>Oyunu Başlat</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    );
+  }
+
+  // Normal oyun ekranı
   return (
     <View style={styles.container}>
       <View style={[styles.gameBoard, { width: gameWidth, height: gameHeight }]}>
@@ -298,5 +329,34 @@ const styles = StyleSheet.create({
   },
   controlSpacer: {
     width: 50,
+  },
+  startScreen: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 20,
+  },
+  welcomeText: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginBottom: 16,
+    textAlign: 'center',
+  },
+  instructionText: {
+    fontSize: 16,
+    color: '#666',
+    marginBottom: 32,
+    textAlign: 'center',
+    lineHeight: 24,
+  },
+  startButton: {
+    backgroundColor: '#4CAF50',
+    paddingHorizontal: 32,
+    paddingVertical: 16,
+    borderRadius: 8,
+  },
+  startButtonText: {
+    color: 'white',
+    fontSize: 18,
+    fontWeight: 'bold',
   },
 }); 

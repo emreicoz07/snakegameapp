@@ -33,18 +33,10 @@
           "backgroundColor": "#ffffff"
         }
       ],
-      [
-        "expo-av",
-        {
-          "microphonePermission": false
-        }
-      ]
+      "expo-av"
     ],
     "experiments": {
       "typedRoutes": true
-    },
-    "assets": [
-      "assets/sounds/*"
-    ]
+    }
   }
 }

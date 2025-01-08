@@ -190,40 +190,38 @@ export function GameBoard({ gameState, setGameState }: Props) {
         />
       </View>
 
-      {Platform.OS !== 'web' && (
-        <View style={styles.controls}>
-          <View style={styles.controlRow}>
-            <View style={styles.controlSpacer} />
-            <TouchableOpacity
-              style={styles.controlButton}
-              onPress={() => handleDirectionChange('UP')}
-            >
-              <Text style={styles.controlText}>↑</Text>
-            </TouchableOpacity>
-            <View style={styles.controlSpacer} />
-          </View>
-          <View style={styles.controlRow}>
-            <TouchableOpacity
-              style={styles.controlButton}
-              onPress={() => handleDirectionChange('LEFT')}
-            >
-              <Text style={styles.controlText}>←</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.controlButton}
-              onPress={() => handleDirectionChange('DOWN')}
-            >
-              <Text style={styles.controlText}>↓</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.controlButton}
-              onPress={() => handleDirectionChange('RIGHT')}
-            >
-              <Text style={styles.controlText}>→</Text>
-            </TouchableOpacity>
-          </View>
+      <View style={styles.controls}>
+        <View style={styles.controlRow}>
+          <View style={styles.controlSpacer} />
+          <TouchableOpacity
+            style={styles.controlButton}
+            onPress={() => handleDirectionChange('UP')}
+          >
+            <Text style={styles.controlText}>↑</Text>
+          </TouchableOpacity>
+          <View style={styles.controlSpacer} />
         </View>
-      )}
+        <View style={styles.controlRow}>
+          <TouchableOpacity
+            style={styles.controlButton}
+            onPress={() => handleDirectionChange('LEFT')}
+          >
+            <Text style={styles.controlText}>←</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.controlButton}
+            onPress={() => handleDirectionChange('DOWN')}
+          >
+            <Text style={styles.controlText}>↓</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.controlButton}
+            onPress={() => handleDirectionChange('RIGHT')}
+          >
+            <Text style={styles.controlText}>→</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
     </View>
   );
 }
