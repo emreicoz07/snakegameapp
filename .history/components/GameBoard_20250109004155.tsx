@@ -11,19 +11,13 @@ type Props = {
 };
 
 export function GameBoard({ gameState, setGameState }: Props) {
+  // Ekran genişliğine göre oyun alanını ölçeklendirme
   const screenWidth = Dimensions.get('window').width;
-  const screenHeight = Dimensions.get('window').height;
-  
   const scale = useMemo(() => {
     const maxGameWidth = GRID_SIZE * CELL_SIZE;
-    const padding = 32;
-    const maxHeight = screenHeight - 300;
-    
-    const scaleByWidth = (screenWidth - padding) / maxGameWidth;
-    const scaleByHeight = maxHeight / maxGameWidth;
-    
-    return Math.min(1, Math.min(scaleByWidth, scaleByHeight));
-  }, [screenWidth, screenHeight]);
+    const padding = 32; // Kenarlardan boşluk
+    return Math.min(1, (screenWidth - padding) / maxGameWidth);
+  }, [screenWidth]);
 
   // Ölçeklendirilmiş hücre boyutu
   const scaledCellSize = CELL_SIZE * scale;
@@ -230,19 +224,16 @@ function isCollision(head: Position, snake: Position[]): boolean {
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
     alignItems: 'center',
-    justifyContent: 'flex-start',
-    paddingHorizontal: 16,
-    paddingTop: Platform.OS === 'ios' ? 10 : 20,
-    paddingBottom: Platform.OS === 'ios' ? 140 : 120,
+    justifyContent: 'center',
+    padding: 16,
+    flex: 1,
   },
   gameBoard: {
     backgroundColor: '#f0f0f0',
     borderWidth: 1,
     borderColor: '#ccc',
     position: 'relative',
-    marginTop: -40,
   },
   cell: {
     position: 'absolute',

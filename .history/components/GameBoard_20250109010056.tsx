@@ -235,7 +235,7 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-start',
     paddingHorizontal: 16,
     paddingTop: Platform.OS === 'ios' ? 10 : 20,
-    paddingBottom: Platform.OS === 'ios' ? 140 : 120,
+    paddingBottom: Platform.OS === 'ios' ? 120 : 100,
   },
   gameBoard: {
     backgroundColor: '#f0f0f0',

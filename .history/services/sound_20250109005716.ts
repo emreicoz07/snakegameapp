@@ -90,14 +90,19 @@ class SoundService {
         const sound = this.sounds[type];
         if (sound) {
           try {
-            // Sesi durdurmak yerine direkt olarak baştan çalalım
-            await sound.replayAsync().catch(() => {});
+            // Önce mevcut sesi durdur
+            await sound.stopAsync().catch(() => {});
+            // Sesi başa sar
+            await sound.setPositionAsync(0).catch(() => {});
+            // Yeni ses çal
+            await sound.playAsync().catch(() => {});
           } catch (error) {
             console.warn(`Failed to play ${type} sound:`, error);
           }
         }
       }
     } catch (error) {
+      // Hata loglama ama uygulamanın çalışmasını engellememe
       console.warn(`Error playing ${type} sound:`, error);
     }
   }

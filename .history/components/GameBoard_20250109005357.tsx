@@ -232,17 +232,16 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     alignItems: 'center',
-    justifyContent: 'flex-start',
+    justifyContent: 'center',
     paddingHorizontal: 16,
-    paddingTop: Platform.OS === 'ios' ? 10 : 20,
-    paddingBottom: Platform.OS === 'ios' ? 140 : 120,
+    paddingTop: 20,
+    paddingBottom: 10,
   },
   gameBoard: {
     backgroundColor: '#f0f0f0',
     borderWidth: 1,
     borderColor: '#ccc',
     position: 'relative',
-    marginTop: -40,
   },
   cell: {
     position: 'absolute',
