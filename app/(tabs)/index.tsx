@@ -11,7 +11,7 @@ import { INITIAL_SNAKE_POSITION } from '@/constants/game';
 export default function GameScreen() {
   const [gameState, setGameState] = useState<GameState>({
     snake: INITIAL_SNAKE_POSITION,
-    food: { x: 10, y: 10 }, // Başlangıç yemi pozisyonu
+    food: { x: -1, y: -1 }, // Başlangıçta görünmez bir pozisyon
     direction: 'RIGHT',
     isGameOver: false,
     score: 0,
@@ -20,7 +20,7 @@ export default function GameScreen() {
   const handleRestart = () => {
     setGameState({
       snake: INITIAL_SNAKE_POSITION,
-      food: { x: 10, y: 10 },
+      food: { x: -1, y: -1 }, // Başlangıçta yine görünmez pozisyon
       direction: 'RIGHT',
       isGameOver: false,
       score: 0,

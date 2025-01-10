@@ -1,9 +1,11 @@
-import React, { useEffect, useMemo } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { View, StyleSheet, TouchableOpacity, Text, Platform, Dimensions } from 'react-native';
-import { GRID_SIZE, CELL_SIZE, BASE_SPEED, SPEED_INCREMENT } from '@/constants/game';
+import { GRID_SIZE, CELL_SIZE, BASE_SPEED, SPEED_INCREMENT, INITIAL_SNAKE_POSITION } from '@/constants/game';
 import type { GameState, Direction, Position } from '@/types/game';
 import { soundService } from '@/services/sound';
 import { Joystick } from './Joystick';
+import { ThemedText } from '@/components/ThemedText';
+import { ThemedView } from '@/components/ThemedView';
 
 type Props = {
   gameState: GameState;
@@ -11,6 +13,9 @@ type Props = {
 };
 
 export function GameBoard({ gameState, setGameState }: Props) {
+  // State tanımlamalarını en üste taşıyoruz
+  const [isGameStarted, setIsGameStarted] = useState(false);
+  
   const screenWidth = Dimensions.get('window').width;
   const screenHeight = Dimensions.get('window').height;
   
@@ -73,7 +78,7 @@ export function GameBoard({ gameState, setGameState }: Props) {
   };
 
   const handleDirectionChange = async (newDirection: Direction) => {
-    if (gameState.isGameOver) return;
+    if (!isGameStarted || gameState.isGameOver) return;
     
     if (
       (newDirection === 'UP' && gameState.direction === 'DOWN') ||
@@ -91,7 +96,7 @@ export function GameBoard({ gameState, setGameState }: Props) {
   useEffect(() => {
     if (Platform.OS === 'web') {
       const handleKeyPress = (event: KeyboardEvent) => {
-        if (gameState.isGameOver) return;
+        if (!isGameStarted || gameState.isGameOver) return;
 
         event.preventDefault();
 
@@ -118,10 +123,23 @@ export function GameBoard({ gameState, setGameState }: Props) {
       window.addEventListener('keyup', handleKeyPress);
       return () => window.removeEventListener('keyup', handleKeyPress);
     }
-  }, [gameState.isGameOver, handleDirectionChange]);
+  }, [gameState.isGameOver, handleDirectionChange, isGameStarted]);
 
+  // Oyunu başlatma fonksiyonu
+  const startGame = () => {
+    setIsGameStarted(true);
+    setGameState({
+      snake: INITIAL_SNAKE_POSITION,
+      food: generateFood(INITIAL_SNAKE_POSITION),
+      direction: 'RIGHT',
+      isGameOver: false,
+      score: 0,
+    });
+  };
+
+  // useEffect'i güncelliyoruz
   useEffect(() => {
-    if (gameState.isGameOver) return;
+    if (!isGameStarted || gameState.isGameOver) return;
 
     const currentSpeed = Math.max(
       BASE_SPEED - (gameState.snake.length - 3) * SPEED_INCREMENT,
@@ -173,32 +191,46 @@ export function GameBoard({ gameState, setGameState }: Props) {
     }, currentSpeed);
 
     return () => clearInterval(gameLoop);
-  }, [gameState.isGameOver, gameState.snake.length]);
+  }, [isGameStarted, gameState.isGameOver, gameState.snake.length]);
 
   return (
     <View style={styles.container}>
-      <View style={[styles.gameBoard, { width: gameWidth, height: gameHeight }]}>
-        {gameState.snake.map((segment, index) => (
-          <View
-            key={`${segment.x}-${segment.y}`}
-            style={[
-              styles.cell,
-              styles.snake,
-              getPosition(segment),
-            ]}
-          />
-        ))}
-        <View
-          style={[
-            styles.cell,
-            styles.food,
-            getPosition(gameState.food),
-          ]}
-        />
-      </View>
+      {!isGameStarted ? (
+        <View style={styles.startScreen}>
+          <ThemedText style={styles.title}>Snake Game</ThemedText>
+          <TouchableOpacity 
+            style={styles.startButton}
+            onPress={startGame}
+          >
+            <ThemedText style={styles.startButtonText}>Start Game</ThemedText>
+          </TouchableOpacity>
+        </View>
+      ) : (
+        <>
+          <View style={[styles.gameBoard, { width: gameWidth, height: gameHeight }]}>
+            {gameState.snake.map((segment, index) => (
+              <View
+                key={`${segment.x}-${segment.y}`}
+                style={[
+                  styles.cell,
+                  styles.snake,
+                  getPosition(segment),
+                ]}
+              />
+            ))}
+            <View
+              style={[
+                styles.cell,
+                styles.food,
+                getPosition(gameState.food),
+              ]}
+            />
+          </View>
 
-      {Platform.OS !== 'web' && (
-        <Joystick onDirectionChange={handleDirectionChange} />
+          {Platform.OS !== 'web' && (
+            <Joystick onDirectionChange={handleDirectionChange} />
+          )}
+        </>
       )}
     </View>
   );
@@ -278,5 +310,35 @@ const styles = StyleSheet.create({
   },
   controlSpacer: {
     width: 50,
+  },
+  startScreen: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: 20,
+  },
+  title: {
+    fontSize: 32,
+    fontWeight: 'bold',
+    marginBottom: 20,
+  },
+  startButton: {
+    backgroundColor: '#4CAF50',
+    paddingHorizontal: 30,
+    paddingVertical: 15,
+    borderRadius: 8,
+    elevation: 3,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+  },
+  startButtonText: {
+    color: 'white',
+    fontSize: 20,
+    fontWeight: 'bold',
   },
 }); 
